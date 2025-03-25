@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Guess the VC Guy</title>
+    <style>
+      body {
+        text-align: center;
+        font-family: Arial, sans-serif;
+        background-color: #0d1417;
+        margin: 20px;
+      }
+      canvas {
+        border: 3px solid #333;
+        border-radius: 10px;
+        background-color: white;
+        width: 300px; /* Fixed width */
+        height: auto; /* Height adjusts based on aspect ratio */
+      }
+      input,
+      button {
+        padding: 10px;
+        margin: 10px;
+        font-size: 16px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        text-align: center;
+      }
+      button {
+        background-color: rgb(40, 167, 69);
+        color: rgb(255, 255, 255);
+        border: none;
+        padding: 10px 20px;
+        font-size: 16px;
+        border-radius: 5px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      #feedback,
+      #correctAnswer {
+        display: none; /* Initially hidden */
+        font-weight: bold;
+        padding: 10px;
+        background-color: #151513;
+        border: 1px solid #ffcc00;
+        border-radius: 5px;
+        display: inline-block;
+        margin-top: 10px;
+        color: #ffcc00;
+      }
+      #gameContainer {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      #blocks,
+      #newGame {
+        display: none;
+      }
+      #guessesLeft {
+        position: fixed;
+        top: 30%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: rgba(0, 0, 0, 0.7);
+        color: white;
+        padding: 10px;
+        font-size: 18px;
+        border-radius: 5px;
+        display: none;
+        transition: opacity 1s ease;
+      }
+
+      /* New CSS for full image display */
+      #fullImageContainer {
+        position: fixed;
+        top: 40%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9999; /* Place the image above the canvas */
+        text-align: center;
+        background-color: #0d1417;
+        display: none; /* Initially hidden */
+      }
+
+      #fullImageContainer img {
+        width: 100%; /* Adjust image size to 60% of the screen width */
+        max-width: 400px; /* Max width */
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
+      }
+      #fullImageContainer p {
+        font-weight: bold;
+        padding: 10px;
+        background-color: #151513;
+        border: 1px solid #ffcc00;
+        border-radius: 5px;
+        display: inline-block;
+        margin-top: 10px;
+        color: #ffcc00;
+      }
+    </style>
+  </head>
+  <body>
+    <audio id="correctSound" src="sound/correct.mp3"></audio>
+    <audio id="wrongSound" src="sound/wrong.mp3"></audio>
+    <audio id="gameStartSound" src="sound/start.mp3"></audio>
+    <audio id="gameEndSound" src="sound/end.mp3"></audio>
+
+    <div id="gameContainer">
+      <h1 style="color: #4caf50">
+        <samp style="font-size: 40px; font-weight: bold; color: #800080"
+          >VC</samp
+        >Friends
+      </h1>
+      <button id="startGame">משחק חדש</button>
+      <br />
+      <canvas id="canvas" width="300"></canvas>
+      <!-- Fixed width -->
+      <br />
+      <input id="blocks" type="range" min="1" max="50" value="5" disabled />
+      <input id="guess" type="text" placeholder="תן ניחוש חבר" />
+      <button id="submitGuess">נחש</button>
+      <p id="feedback"></p>
+      <p id="correctAnswer"></p>
+      <!-- <button id="newGame" style="display: none;">New Game</button> -->
+    </div>
+
+    <div id="guessesLeft"></div>
+    <!-- Floating guesses left message -->
+
+    <!-- Full Image Container (for the final image) -->
+    <div id="fullImageContainer"></div>
+
+    <script>
+      var ctx = canvas.getContext("2d"),
+        img = new Image(),
+        guessesLeft = 5,
+        correctAnswer = "",
+        imagesFolder = "images/", // Folder for images
+        imageFiles = [
+          "Adi Ben David.jpg",
+          "Amit Horovitz.jpg",
+          "Amit Wicnudel.jpg",
+          "Amos Dylan Varon",
+          "Sasha Kozakevich.jpg",
+          "Ava Bensoussan.jpg",
+          "Avi Perez.jpg",
+          "Aviad Louzon.jpg",
+          "Bryce Parrish.jpg",
+          "Catalina Sainsus.jpg",
+          "Chen Elkabetz.jpg",
+          "Christina Chauskin.jpg",
+          "Collin Thurston.jpg",
+          "Dor Levy.jpg",
+          "Dror Gross.jpg",
+          "Elnatan Yakira.jpg",
+          "Emilio Fernandez.jpg",
+          "Eyal Arad.jpg",
+          "Sasha Uzelevski.jpg",
+        ], // List of image files
+        uploadedImages = [];
+
+      ctx.mozImageSmoothingEnabled = false;
+      ctx.webkitImageSmoothingEnabled = false;
+      ctx.imageSmoothingEnabled = false;
+      function playSound(id) {
+        var sound = document.getElementById(id);
+        if (sound) {
+          sound.muted = false; // ודא שהאודיו אינו מושתק
+          sound.currentTime = 0; // אתחל מחדש כל פעם
+          sound
+            .play()
+            .catch((error) => console.warn("Audio play failed:", error));
+        }
+      }
+
+      function pixelate() {
+        var size = blocks.value * 0.005,
+          w = canvas.width * size,
+          h = canvas.height * size;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, img.width, img.height, 0, 0, w, h);
+        ctx.drawImage(canvas, 0, 0, w, h, 0, 0, canvas.width, canvas.height);
+      }
+
+      function smoothIncrease(targetValue) {
+        let currentValue = parseInt(blocks.value);
+        let step = (targetValue - currentValue) / 20;
+
+        function animate() {
+          if (Math.abs(targetValue - currentValue) > 0.5) {
+            currentValue += step;
+            blocks.value = Math.round(currentValue);
+            pixelate();
+            requestAnimationFrame(animate);
+          } else {
+            blocks.value = targetValue;
+            pixelate();
+          }
+        }
+        requestAnimationFrame(animate);
+      }
+
+      function showGuessesLeft() {
+        var guessesElement = document.getElementById("guessesLeft");
+        guessesElement.innerText = "נותרו " + guessesLeft + " ניחושים";
+        guessesElement.style.display = "block";
+        guessesElement.style.opacity = 1;
+        setTimeout(function () {
+          guessesElement.style.opacity = 0;
+          setTimeout(function () {
+            guessesElement.style.display = "none";
+          }, 1000);
+        }, 1000);
+      }
+
+      function updateGameState() {
+        if (guessesLeft > 0) {
+          smoothIncrease(parseInt(blocks.value) + 5);
+        }
+        if (guess.value.toLowerCase() === correctAnswer.toLowerCase()) {
+          document.getElementById("feedback").innerText =
+            "!פששש... אתה חבר אמת";
+          document.getElementById("feedback").style.display = "inline-block"; // Show feedback
+          playSound("correctSound");
+          endGame();
+        } else {
+          // עדכון הפידבק לפי מספר הניחושים השגויים
+          var feedbackText = "לא נכון";
+          if (guessesLeft === 4) {
+            feedbackText = "עדיין לא נכון";
+          } else if (guessesLeft === 3) {
+            feedbackText = "?מה יהיה";
+          } else if (guessesLeft === 2) {
+            feedbackText = "זה כבר לא נעים";
+          } else if (guessesLeft === 1) {
+            feedbackText = "...ואתה לא חבר";
+          } else if (guessesLeft === 0) {
+            feedbackText = "...ואתה לא חבר";
+          }
+
+          document.getElementById("feedback").innerText = feedbackText;
+          document.getElementById("feedback").style.display = "inline-block"; // Show feedback
+          playSound("wrongSound");
+          guessesLeft--;
+          showGuessesLeft(); // Show remaining guesses with fade effect
+          if (guessesLeft === 0) {
+            endGame();
+          }
+        }
+      }
+
+      function endGame() {
+        playSound("gameEndSound");
+
+        // Hide feedback and correct answer
+        document.getElementById("feedback").style.display = "none";
+        document.getElementById("correctAnswer").style.display = "none";
+
+        // Load the full image directly from the images folder
+        var fullImage = new Image();
+        fullImage.src = imagesFolder + correctAnswer + ".jpg"; // The correct image file
+
+        fullImage.onload = function () {
+          // Create a new div element that will hold the full image
+          var imageContainer = document.getElementById("fullImageContainer");
+
+          // Clear any previous content in the container
+          imageContainer.innerHTML = "";
+
+          // Create a new button for starting a new game
+          var newGameButton = document.createElement("button");
+          newGameButton.innerText = "Start New Game";
+          newGameButton.style.marginBottom = "10px"; // Add some space below the button
+          newGameButton.style.backgroundColor = "#28a745"; // Green color for the button
+          newGameButton.style.color = "#fff";
+          newGameButton.style.border = "none";
+          newGameButton.style.padding = "10px 20px";
+          newGameButton.style.fontSize = "16px";
+          newGameButton.style.borderRadius = "5px";
+          newGameButton.style.cursor = "pointer";
+
+          // Add an event listener to the new button to start a new game
+          newGameButton.addEventListener("click", function () {
+            startNewGame();
+            imageContainer.style.display = "none"; // Hide the full image container when starting a new game
+          });
+
+          // Append the new "Start Game" button to the image container
+          imageContainer.appendChild(newGameButton);
+
+          // Append the full image to the container
+          imageContainer.appendChild(fullImage);
+
+          // Add the name label below the full image
+          var nameLabel = document.createElement("p");
+          nameLabel.innerText = correctAnswer;
+          nameLabel.style.color = "#ffcc00"; // Yellow text color
+          imageContainer.appendChild(nameLabel);
+
+          // Add the feedback label below the name
+          var feedbackLabel = document.createElement("p");
+          feedbackLabel.innerText =
+            document.getElementById("feedback").innerText;
+          feedbackLabel.style.color = "#ffcc00"; // Yellow text color
+          imageContainer.appendChild(feedbackLabel);
+
+          // Display the full image container
+          imageContainer.style.display = "flex";
+          imageContainer.style.flexDirection = "column"; // Set flex direction to column
+          imageContainer.style.justifyContent = "center"; // Center content horizontally
+          imageContainer.style.alignItems = "center"; // Center content vertically
+          imageContainer.style.color = "#ffcc00"; // Text color yellow
+          imageContainer.style.textAlign = "center"; // Center text alignment
+
+          // Keep the canvas behind the full image
+          document.getElementById("canvas").style.zIndex = -1;
+        };
+
+        guess.disabled = true;
+        submitGuess.disabled = true;
+      }
+
+      function startNewGame() {
+        // Hide feedback and correct answer at the start of a new game
+        document.getElementById("feedback").style.display = "none";
+        document.getElementById("correctAnswer").style.display = "none";
+
+        // Hide the full image when starting a new game
+        document.getElementById("fullImageContainer").style.display = "none";
+
+        if (imageFiles.length > 0) {
+          var randomFile =
+            imageFiles[Math.floor(Math.random() * imageFiles.length)];
+          img.src = imagesFolder + randomFile; // Use path from the images folder
+          correctAnswer = randomFile.split(".")[0]; // Remove file extension to get the name
+          img.onload = function () {
+            // Resize canvas height according to image aspect ratio
+            var aspectRatio = img.height / img.width;
+            canvas.height = canvas.width * aspectRatio;
+
+            blocks.value = 5;
+            pixelate();
+            guessesLeft = 5;
+            guess.disabled = false;
+            submitGuess.disabled = false;
+            guess.value = "";
+          };
+        }
+      }
+
+      document
+        .getElementById("startGame")
+        .addEventListener("click", function () {
+          startNewGame();
+        });
+
+      submitGuess.addEventListener("click", function () {
+        updateGameState();
+      });
+
+      guess.addEventListener("keypress", function (event) {
+        if (event.key === "Enter") {
+          updateGameState();
+        }
+      });
+    </script>
+  </body>
+</html>
