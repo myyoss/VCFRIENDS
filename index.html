@@ -421,11 +421,13 @@
 
       submitGuess.addEventListener("click", function () {
         updateGameState();
+                document.getElementById("guess").value = ""; // Clear input after submission
       });
 
       guess.addEventListener("keypress", function (event) {
         if (event.key === "Enter") {
           updateGameState();
+          document.getElementById("guess").value = ""; // Clear input after submission
         }
       });
     </script>
