@@ -50,6 +50,13 @@
       button:hover {
         background-color: #0056b3;
       }
+      .guessContainer input {
+        margin: 0;
+      }
+      .guessContainer button {
+        margin: 4;
+        margin-left: 0;
+      }
       #feedback,
       #correctAnswer {
         display: none; /* Initially hidden */
@@ -97,12 +104,12 @@
       /* New CSS for full image display */
       #fullImageContainer {
         position: fixed;
-        top: 40%;
-        left: 50%;
+        top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
-        background-color: rgba(0, 0, 0, 0.8);
-        transform: translate(-50%, -50%);
+        background-color: rgba(0, 0, 0, 0.9);
+        /* transform: translate(-50%, -50%); */
         z-index: 9999; /* Place the image above the canvas */
         text-align: center;
         display: none; /* Initially hidden */
@@ -149,8 +156,10 @@
       <!-- Fixed width -->
       <br />
       <input id="blocks" type="range" min="1" max="50" value="5" disabled />
-      <input id="guess" type="text" placeholder="תן ניחוש חבר" />
-      <button id="submitGuess">נחש</button>
+      <div class="guessContainer">
+        <button id="submitGuess">נחש</button>
+        <input id="guess" type="text" placeholder="תן ניחוש חבר" />
+      </div>
       <p id="feedback"></p>
       <p id="correctAnswer"></p>
       <!-- <button id="newGame" style="display: none;">New Game</button> -->
@@ -423,7 +432,7 @@
 
       submitGuess.addEventListener("click", function () {
         updateGameState();
-                document.getElementById("guess").value = ""; // Clear input after submission
+        document.getElementById("guess").value = ""; // Clear input after submission
       });
 
       guess.addEventListener("keypress", function (event) {
