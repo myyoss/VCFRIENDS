@@ -26,8 +26,8 @@
         border: 3px solid #333;
         border-radius: 10px;
         background-color: white;
-        width: 300px; /* Fixed width */
-        height: auto; /* Height adjusts based on aspect ratio */
+        width: 300px;
+        height: auto;
       }
       input,
       button {
@@ -50,16 +50,8 @@
       button:hover {
         background-color: #0056b3;
       }
-      .guessContainer input {
-        margin: 0;
-      }
-      .guessContainer button {
-        margin: 4;
-        margin-left: 0;
-      }
       #feedback,
       #correctAnswer {
-        display: none; /* Initially hidden */
         font-weight: bold;
         padding: 10px;
         background-color: #151513;
@@ -68,6 +60,8 @@
         display: inline-block;
         margin-top: 10px;
         color: #ffcc00;
+        display: none;
+
       }
       #gameContainer {
         display: flex;
@@ -83,9 +77,7 @@
       }
       #startGame {
         margin-top: 30px;
-      }
-      #startGame {
-        margin-top: 30px;
+        /* display: none; */
       }
       #guessesLeft {
         position: absolute;
@@ -100,24 +92,30 @@
         display: none;
         transition: opacity 1s ease;
       }
-
-      /* New CSS for full image display */
       #fullImageContainer {
-        position: fixed;
-        top: 0;
-        left: 0;
         width: 100%;
-        height: 100%;
-        background-color: rgba(0, 0, 0, 0.9);
-        /* transform: translate(-50%, -50%); */
-        z-index: 9999; /* Place the image above the canvas */
+        height: 70%;
+        position: absolute;
+        top: 380px;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9998; /* Place the image above the canvas */
         text-align: center;
+        background-color: #0d1417;
         display: none; /* Initially hidden */
       }
-
+      #countdown{
+        position: absolute;
+        top: 100px;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 9998; /* Place the image above the canvas */
+        text-align: center;
+        background-color: #0d1417;
+      }
       #fullImageContainer img {
-        width: 100%; /* Adjust image size to 60% of the screen width */
-        max-width: 400px; /* Max width */
+        width: 100%;
+        max-width: 400px;
         border-radius: 10px;
         box-shadow: 0 0 10px rgba(0, 0, 0, 0.7);
       }
@@ -142,59 +140,54 @@
 
     <div id="gameContainer">
       <div class="header">
-        <img src="images/dwarf.png" alt="Girl in a jacket" />
+        <img src="images/dwarf.png" alt="dwarf" />
         <h1 style="color: #4caf50">
           <samp style="font-size: 40px; font-weight: bold; color: #800080"
             >VC</samp
           >Friends?
         </h1>
-        <img src="images/BigGuy.png" alt="Girl in a jacket" />
+        <img src="images/BigGuy.png" alt="big guy" />
       </div>
       <button id="startGame">משחק חדש</button>
       <br />
       <canvas id="canvas" width="300"></canvas>
-      <!-- Fixed width -->
       <br />
       <input id="blocks" type="range" min="1" max="50" value="5" disabled />
-      <div class="guessContainer">
-        <button id="submitGuess">נחש</button>
-        <input id="guess" type="text" placeholder="תן ניחוש חבר" />
-      </div>
+      <input id="guess" type="text" placeholder="תן ניחוש חבר" />
+      <button id="submitGuess">נחש</button>
       <p id="feedback"></p>
       <p id="correctAnswer"></p>
-      <!-- <button id="newGame" style="display: none;">New Game</button> -->
     </div>
 
     <div id="guessesLeft"></div>
-    <!-- Floating guesses left message -->
-
-    <!-- Full Image Container (for the final image) -->
     <div id="fullImageContainer"></div>
+    <p id="countdown" style="font-size: 18px; color: #ffcc00"></p>
+    <!-- Countdown Timer -->
 
     <script>
       var ctx = canvas.getContext("2d"),
         img = new Image(),
         guessesLeft = 5,
         correctAnswer = "",
-        imagesFolder = "images/", // Folder for images
+        imagesFolder = "images/",
         imageFiles = [
-          "עדי בן דוד.jpg",
+          // "עדי בן דוד.jpg",
           "עמית הורוביץ.jpg",
           "עמית ויקנודל.jpg",
-          "עמוס ורון.jpg",
+          // "עמוס ורון.jpg",
           "סשה קוזקביץ.jpg",
           "אבה בן שושן.jpg",
           "אבי פרץ.jpg",
           "אביעד לוזון.jpg",
-          "ברייס פאריש.jpg",
+          // "ברייס פאריש.jpg",
           "קטלינה סינסוס.jpg",
           "חן אלקבץ.jpg",
           "קריסטינה צאוסקין.jpg",
-          "קולין תרסטון.jpg",
+          // "קולין תרסטון.jpg",
           "דור לוי.jpg",
           "דרור גרוס.jpg",
           "אלנתן יקירה.jpg",
-          "אמיליו פרננדז.jpg",
+          // "אמיליו פרננדז.jpg",
           "אייל ארד.jpg",
           "גל לנקרי.jpg",
           "אוהד אליהו.jpg",
@@ -205,18 +198,18 @@
           "גבריאל גרינר.jpg",
           "סשה אוזלבזקי.jpg",
           "חגית פלדמן.jpg",
-          "יונה גולד.jpg",
-          "מייגן הסיון.jpg",
+          // "יונה גולד.jpg",
+          // "מייגן הסיון.jpg",
           "ליאור ברשטיין.jpg",
           "מירב אלון.jpg",
           "נבו ברקת.jpg",
-          "נוי גולדנברג.jpg",
+          // "נוי גולדנברג.jpg",
           "נטע גלין.jpg",
-          "ניצן אנגלברג.jpg",
+          // "ניצן אנגלברג.jpg",
           "עומר עציון.jpg",
           "גרמי אוחנה.jpg",
           "עידו לובלינסקי.jpg",
-          "גרהם טאונסנד.jpg",
+          // "גרהם טאונסנד.jpg",
           "רון נאמן.jpg",
           "שי רובינשטיין.jpg",
           "רועי אנטוקוליץ.jpg",
@@ -232,17 +225,17 @@
           "יניב בוייגוריה.jpg",
           "תום קראוס.jpg",
           "יובל זנגר.jpg",
-        ], // List of image files
-        uploadedImages = [];
+        ];
 
       ctx.mozImageSmoothingEnabled = false;
       ctx.webkitImageSmoothingEnabled = false;
       ctx.imageSmoothingEnabled = false;
+
       function playSound(id) {
         var sound = document.getElementById(id);
         if (sound) {
-          sound.muted = false; // ודא שהאודיו אינו מושתק
-          sound.currentTime = 0; // אתחל מחדש כל פעם
+          sound.muted = false;
+          sound.currentTime = 0;
           sound
             .play()
             .catch((error) => console.warn("Audio play failed:", error));
@@ -261,7 +254,6 @@
       function smoothIncrease(targetValue) {
         let currentValue = parseInt(blocks.value);
         let step = (targetValue - currentValue) / 20;
-
         function animate() {
           if (Math.abs(targetValue - currentValue) > 0.5) {
             currentValue += step;
@@ -296,11 +288,10 @@
         if (guess.value.toLowerCase() === correctAnswer.toLowerCase()) {
           document.getElementById("feedback").innerText =
             "!פששש... אתה חבר אמת";
-          document.getElementById("feedback").style.display = "inline-block"; // Show feedback
+          document.getElementById("feedback").style.display = "inline-block";
           playSound("correctSound");
           endGame();
         } else {
-          // עדכון הפידבק לפי מספר הניחושים השגויים
           var feedbackText = "לא נכון";
           if (guessesLeft === 4) {
             feedbackText = "עדיין לא נכון";
@@ -313,82 +304,53 @@
           } else if (guessesLeft === 0) {
             feedbackText = "...ואתה לא חבר";
           }
-
           document.getElementById("feedback").innerText = feedbackText;
-          document.getElementById("feedback").style.display = "inline-block"; // Show feedback
+          document.getElementById("feedback").style.display = "inline-block";
           playSound("wrongSound");
           guessesLeft--;
-          showGuessesLeft(); // Show remaining guesses with fade effect
-          if (guessesLeft === 0) {
-            endGame();
-          }
+          showGuessesLeft();
+          if (guessesLeft === 0) endGame();
         }
       }
 
       function endGame() {
         playSound("gameEndSound");
-
-        // Hide feedback and correct answer
         document.getElementById("feedback").style.display = "none";
         document.getElementById("correctAnswer").style.display = "none";
 
-        // Load the full image directly from the images folder
         var fullImage = new Image();
-        fullImage.src = imagesFolder + correctAnswer + ".jpg"; // The correct image file
-
+        fullImage.src = imagesFolder + correctAnswer + ".jpg";
         fullImage.onload = function () {
-          // Create a new div element that will hold the full image
           var imageContainer = document.getElementById("fullImageContainer");
-
-          // Clear any previous content in the container
           imageContainer.innerHTML = "";
 
-          // Create a new button for starting a new game
           var newGameButton = document.createElement("button");
           newGameButton.innerText = "משחק חדש";
-          newGameButton.style.marginBottom = "10px"; // Add some space below the button
-          newGameButton.style.backgroundColor = "#28a745"; // Green color for the button
-          newGameButton.style.color = "#fff";
-          newGameButton.style.border = "none";
-          newGameButton.style.padding = "10px 20px";
-          newGameButton.style.fontSize = "16px";
-          newGameButton.style.borderRadius = "5px";
-          newGameButton.style.cursor = "pointer";
-
-          // Add an event listener to the new button to start a new game
+          newGameButton.style.cssText =
+            "margin-bottom:10px;background-color:#28a745;color:#fff;border:none;padding:10px 20px;font-size:16px;border-radius:5px;cursor:pointer;";
           newGameButton.addEventListener("click", function () {
             startNewGame();
-            imageContainer.style.display = "none"; // Hide the full image container when starting a new game
+            imageContainer.style.display = "none";
           });
 
-          // Append the new "Start Game" button to the image container
-          imageContainer.appendChild(newGameButton);
-
-          // Append the full image to the container
+          // imageContainer.appendChild(newGameButton);
           imageContainer.appendChild(fullImage);
 
-          // Add the name label below the full image
           var nameLabel = document.createElement("p");
           nameLabel.innerText = correctAnswer;
-          nameLabel.style.color = "#ffcc00"; // Yellow text color
           imageContainer.appendChild(nameLabel);
 
-          // Add the feedback label below the name
           var feedbackLabel = document.createElement("p");
           feedbackLabel.innerText =
             document.getElementById("feedback").innerText;
-          feedbackLabel.style.color = "#ffcc00"; // Yellow text color
           imageContainer.appendChild(feedbackLabel);
 
-          // Display the full image container
           imageContainer.style.display = "flex";
-          imageContainer.style.flexDirection = "column"; // Set flex direction to column
-          imageContainer.style.justifyContent = "center"; // Center content horizontally
-          imageContainer.style.alignItems = "center"; // Center content vertically
-          imageContainer.style.color = "#ffcc00"; // Text color yellow
-          imageContainer.style.textAlign = "center"; // Center text alignment
+          imageContainer.style.flexDirection = "column";
+          imageContainer.style.justifyContent = "center";
+          imageContainer.style.alignItems = "center";
+          imageContainer.style.textAlign = "center";
 
-          // Keep the canvas behind the full image
           document.getElementById("canvas").style.zIndex = -1;
         };
 
@@ -397,50 +359,170 @@
       }
 
       function startNewGame() {
-        // Hide feedback and correct answer at the start of a new game
+        const lastGameDate = localStorage.getItem("lastGameDate");
+        const today = new Date().toDateString();
+
+        // Check if the user has already played today
+        if (lastGameDate === today) {
+          alert("                                תחזור לעבוד, כבר שיחקת אותי היום.");
+          return; // Stop the game from starting again today
+        }
+
         document.getElementById("feedback").style.display = "none";
         document.getElementById("correctAnswer").style.display = "none";
-
-        // Hide the full image when starting a new game
         document.getElementById("fullImageContainer").style.display = "none";
 
-        if (imageFiles.length > 0) {
-          var randomFile =
-            imageFiles[Math.floor(Math.random() * imageFiles.length)];
-          img.src = imagesFolder + randomFile; // Use path from the images folder
-          correctAnswer = randomFile.split(".")[0]; // Remove file extension to get the name
-          img.onload = function () {
-            // Resize canvas height according to image aspect ratio
-            var aspectRatio = img.height / img.width;
-            canvas.height = canvas.width * aspectRatio;
+        const randomFile =
+          imageFiles[Math.floor(Math.random() * imageFiles.length)];
+        img.src = imagesFolder + randomFile;
+        correctAnswer = randomFile.split(".")[0];
+        img.onload = function () {
+          canvas.height = canvas.width * (img.height / img.width);
+          blocks.value = 5;
+          pixelate();
+          guessesLeft = 5;
+          guess.disabled = false;
+          submitGuess.disabled = false;
+          guess.value = "";
 
-            blocks.value = 5;
-            pixelate();
-            guessesLeft = 5;
-            guess.disabled = false;
-            submitGuess.disabled = false;
-            guess.value = "";
-          };
+          // Save the date this game started
+          localStorage.setItem("lastGameDate", today);
+
+          // Disable the "Start New Game" button
+          document.getElementById("startGame").disabled = true; // Disable start button after playing
+        };
+      }
+
+      function autoLoadDailyGame() {
+        const lastDate = localStorage.getItem("lastGameDate");
+        const today = new Date().toDateString();
+
+        if (lastDate !== today) {
+          startNewGame();
+          startCountdown(); // Start the countdown if it's a new day
+        } else {
+          const now = new Date();
+          const next2AM = new Date();
+          next2AM.setHours(2, 0, 0, 0);
+          if (now >= next2AM) {
+            next2AM.setDate(next2AM.getDate() + 1); // Move to the next day at 2 AM
+          }
+
+          startCountdownToNextGame(next2AM);
+
+          // Disable the "Start New Game" button if the game has already been played today
+          document.getElementById("startGame").disabled = true;
         }
       }
 
-      document
-        .getElementById("startGame")
-        .addEventListener("click", function () {
+      function scheduleDailyReset() {
+        const now = new Date();
+        const next2AM = new Date();
+        next2AM.setHours(2, 0, 0, 0);
+        if (now >= next2AM) {
+          next2AM.setDate(next2AM.getDate() + 1);
+        }
+        const timeUntilReset = next2AM.getTime() - now.getTime();
+        setTimeout(() => {
           startNewGame();
-        });
+          scheduleDailyReset(); // Reschedule for the next day
+        }, timeUntilReset);
+      }
 
-      submitGuess.addEventListener("click", function () {
-        updateGameState();
-        document.getElementById("guess").value = ""; // Clear input after submission
+      document.getElementById("startGame").addEventListener("click", () => {
+        startNewGame();
       });
 
-      guess.addEventListener("keypress", function (event) {
+      submitGuess.addEventListener("click", () => {
+        updateGameState();
+        guess.value = "";
+      });
+
+      guess.addEventListener("keypress", (event) => {
         if (event.key === "Enter") {
           updateGameState();
-          document.getElementById("guess").value = ""; // Clear input after submission
+          guess.value = "";
         }
       });
+      // Countdown Timer Logic
+      let countdownInterval;
+
+      function startCountdown() {
+        const now = new Date();
+        const next2AM = new Date();
+        next2AM.setHours(2, 0, 0, 0);
+        if (now >= next2AM) {
+          next2AM.setDate(next2AM.getDate() + 1);
+        }
+
+        const timeUntilReset = next2AM.getTime() - now.getTime();
+        const countdownElement = document.getElementById("countdown");
+
+        countdownInterval = setInterval(() => {
+          const remainingTime =
+            timeUntilReset - (new Date().getTime() - now.getTime());
+          if (remainingTime <= 0) {
+            clearInterval(countdownInterval);
+            countdownElement.innerText = "המשחק החדש התחיל!";
+            startNewGame();
+          } else {
+            const hours = Math.floor(remainingTime / 3600000);
+            const minutes = Math.floor((remainingTime % 3600000) / 60000);
+            const seconds = Math.floor((remainingTime % 60000) / 1000);
+            countdownElement.innerText = `NEXT GAME ${hours}:${minutes}:${seconds}`;
+          }
+        }, 1000);
+      }
+
+      // Auto-load daily game
+      function autoLoadDailyGame() {
+        const lastDate = localStorage.getItem("lastGameDate");
+        const today = new Date().toDateString();
+
+        if (lastDate !== today) {
+          startNewGame();
+          startCountdown(); // Start the countdown if it's a new day
+        } else {
+          const now = new Date();
+          const next2AM = new Date();
+          next2AM.setHours(2, 0, 0, 0);
+          if (now >= next2AM) {
+            next2AM.setDate(next2AM.getDate() + 1); // Move to the next day at 2 AM
+          }
+
+          startCountdownToNextGame(next2AM);
+        }
+      }
+
+      function startCountdownToNextGame(next2AM) {
+        const countdownElement = document.getElementById("countdown");
+
+        function updateCountdown() {
+          const now = new Date();
+          const timeUntilReset = next2AM.getTime() - now.getTime();
+
+          if (timeUntilReset <= 0) {
+            clearInterval(countdownInterval);
+            countdownElement.innerText = "המשחק החדש התחיל!";
+            startNewGame();
+
+            // Enable the "Start New Game" button after the countdown ends
+            document.getElementById("startGame").disabled = false; // Enable the button
+          } else {
+            const hours = Math.floor(timeUntilReset / 3600000);
+            const minutes = Math.floor((timeUntilReset % 3600000) / 60000);
+            const seconds = Math.floor((timeUntilReset % 60000) / 1000);
+            countdownElement.innerText = `NEXT GAME ${hours}:${minutes}:${seconds}`;
+          }
+        }
+
+        updateCountdown(); // Run once immediately
+        countdownInterval = setInterval(updateCountdown, 1000); // Update every second
+      }
+
+      // Load new game if it's a new day
+      autoLoadDailyGame();
+      scheduleDailyReset();
     </script>
   </body>
 </html>
