@@ -289,7 +289,16 @@
         if (guessesLeft > 0) {
           smoothIncrease(parseInt(blocks.value) + 5);
         }
-        if (guess.value.toLowerCase() === correctAnswer.toLowerCase()) {
+
+        const normalize = (str) => str.toLowerCase().replace(/\s/g, "");
+        const sortString = (str) => normalize(str).split("").sort().join("");
+
+        const isExactMatch =
+          normalize(guess.value) === normalize(correctAnswer);
+        const isAnagramMatch =
+          sortString(guess.value) === sortString(correctAnswer);
+
+        if (isExactMatch || isAnagramMatch) {
           document.getElementById("feedback").innerText =
             "!פששש... אתה חבר אמת";
           document.getElementById("feedback").style.display = "inline-block";
@@ -368,18 +377,38 @@
 
         // Check if the user has already played today
         if (lastGameDate === today) {
-          alert(
-            "תחזור לעבוד, כבר שיחקת אותי היום."
-          );
-          return; // Stop the game from starting again today
+          const feedback = document.getElementById("feedback");
+          feedback.innerText = "(:תחזור לעבוד, כבר שיחקת אותי היום";
+          feedback.style.display = "inline-block";
+          disableInput(); // Optional: disable input if you want to block guessing
+          return;
         }
 
         document.getElementById("feedback").style.display = "none";
         document.getElementById("correctAnswer").style.display = "none";
         document.getElementById("fullImageContainer").style.display = "none";
 
+        // Load used images from localStorage or initialize empty array
+        let usedImages = JSON.parse(localStorage.getItem("usedImages")) || [];
+
+        // If all images have been used, reset the list
+        if (usedImages.length === imageFiles.length) {
+          usedImages = [];
+        }
+
+        // Get the list of available (not-yet-used) images
+        const availableImages = imageFiles.filter(
+          (img) => !usedImages.includes(img)
+        );
+
+        // Pick a random image from the available ones
         const randomFile =
-          imageFiles[Math.floor(Math.random() * imageFiles.length)];
+          availableImages[Math.floor(Math.random() * availableImages.length)];
+
+        // Mark this image as used and persist
+        usedImages.push(randomFile);
+        localStorage.setItem("usedImages", JSON.stringify(usedImages));
+
         img.src = imagesFolder + randomFile;
         correctAnswer = randomFile.split(".")[0];
         img.onload = function () {
@@ -390,35 +419,17 @@
           guess.disabled = false;
           submitGuess.disabled = false;
           guess.value = "";
+          guess.focus();
 
           // Save the date this game started
           localStorage.setItem("lastGameDate", today);
 
           // Disable the "Start New Game" button
-          document.getElementById("startGame").disabled = true; // Disable start button after playing
-        };
-      }
-
-      function autoLoadDailyGame() {
-        const lastDate = localStorage.getItem("lastGameDate");
-        const today = new Date().toDateString();
-
-        if (lastDate !== today) {
-          startNewGame();
-          startCountdown(); // Start the countdown if it's a new day
-        } else {
-          const now = new Date();
-          const next2AM = new Date();
-          next2AM.setHours(2, 0, 0, 0);
-          if (now >= next2AM) {
-            next2AM.setDate(next2AM.getDate() + 1); // Move to the next day at 2 AM
-          }
-
-          startCountdownToNextGame(next2AM);
-
-          // Disable the "Start New Game" button if the game has already been played today
           document.getElementById("startGame").disabled = true;
-        }
+
+          // If you ever want to manually reset the memory
+          // localStorage.removeItem("usedImages");
+        };
       }
 
       function scheduleDailyReset() {
@@ -479,6 +490,28 @@
           }
         }, 1000);
       }
+
+      // function autoLoadDailyGame() {
+      //   const lastDate = localStorage.getItem("lastGameDate");
+      //   const today = new Date().toDateString();
+
+      //   if (lastDate !== today) {
+      //     startNewGame();
+      //     startCountdown(); // Start the countdown if it's a new day
+      //   } else {
+      //     const now = new Date();
+      //     const next2AM = new Date();
+      //     next2AM.setHours(2, 0, 0, 0);
+      //     if (now >= next2AM) {
+      //       next2AM.setDate(next2AM.getDate() + 1); // Move to the next day at 2 AM
+      //     }
+
+      //     startCountdownToNextGame(next2AM);
+
+      //     // Disable the "Start New Game" button if the game has already been played today
+      //     document.getElementById("startGame").disabled = true;
+      //   }
+      // }
 
       // Auto-load daily game
       function autoLoadDailyGame() {
